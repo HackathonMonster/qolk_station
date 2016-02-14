@@ -1,55 +1,31 @@
 'use strict';
 
 const net = require('net');
-const http = require('http');
-const querystring = require('querystring');
+const request = require('request');
 
 const clients = [];
 
 const port = 3001;
 
 const sendServer = (data) => {
-  const postData = querystring.stringify({
-    data
-  });
   const options = {
-    hostname: 'localhost',
-    port: 80,
-    path: '/update',
+    url: 'http://qolk.cloudapp.net/',
     method: 'POST',
+    json: true,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': postData.length
-    }
+      'Content-Type': 'application/json'
+    },
+    form: data
   };
-
-  const req = http.request(options, (res) => {
-    // process.stdout.write(`Server: status - ${res.statusCode}`);
-    // process.stdout.write(`Server: headers - ${JSON.stringify(res.headers)}`);
-    res.setEncoding('utf8');
-    // res.on('data', (chunk) => {
-    //   process.stdout.write(`Server: body - ${chunk}`);
-    // });
-    // res.on('end', () => {
-    // });
+  request(options, () => {
   });
-
-  req.on('error', (e) => {
-    process.stdout.write(`Server: problem with request - ${e.message}`);
-  });
-
-  req.write(postData);
-  req.end();
 };
 
 const convert = (data) => {
-  const hex2decimal = (hex) => {
-    return hex[0] << 8 | hex[1];
-  };
   return {
-    'humidity': hex2decimal(data.slice(0, 2).split('')),
-    'temperature': hex2decimal(data.slice(2, 4).split('')),
-    'alcohol': hex2decimal(data.slice(4, 6).split(''))
+    'temperature': parseInt(data.slice(0, 4), 16) / 65536.0 * 165.0 - 40.0,
+    'humidity': parseInt(data.slice(4, 8), 16) / 65536.0 * 100.0,
+    'alcohol': parseInt(data.slice(8, 12), 16)
   };
 };
 
@@ -59,8 +35,11 @@ net.createServer((socket) => {
 
   socket.on('data', (data) => {
     clients[clients.indexOf(socket)].write(data);
-    process.stdout.write(`Station: get data - ${data}`);
-    sendServer(convert(`${data}`)); // convert string
+    process.stdout.write(`Station: get data@${new Date()} - ${data}\n`);
+    const qolk = `${data}`.split('\n')[2];
+    const jsonData = convert(qolk);
+    sendServer(jsonData); // convert string
+    process.stdout.write(JSON.stringify(jsonData));
   });
 
   socket.on('end', () => {

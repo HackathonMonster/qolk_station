@@ -1,0 +1,22 @@
+{
+  "name": "qolk_station",
+  "version": "1.0.0",
+  "description": "Recieve the humidity, temperature and alcohol of the wine which capped Qolk.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HackathonMonster/qolk_station.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HackathonMonster/qolk_station/issues"
+  },
+  "homepage": "https://github.com/HackathonMonster/qolk_station#readme",
+  "dependencies": {
+    "request": "^2.69.0"
+  }
+}
